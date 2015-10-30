@@ -1,0 +1,52 @@
+﻿Build started 2015-10-01 4:41:35 PM.
+     1>Project "C:\Users\kaveh\Documents\Visual Studio 2010\Projects\EKF - LEO\EKF\EKF.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Creating "Debug\EKF.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt main.cpp
+         main.cpp
+     1>c:\users\kaveh\documents\visual studio 2010\projects\ekf - leo\ekf\main.cpp(117): warning C4244: '=' : conversion from 'float' to 'int', possible loss of data
+     1>c:\users\kaveh\documents\visual studio 2010\projects\ekf - leo\ekf\main.cpp(119): warning C4244: '=' : conversion from 'float' to 'int', possible loss of data
+     1>c:\users\kaveh\documents\visual studio 2010\projects\ekf - leo\ekf\main.cpp(121): warning C4244: '=' : conversion from 'float' to 'int', possible loss of data
+     1>c:\users\kaveh\documents\visual studio 2010\projects\ekf - leo\ekf\main.cpp(128): warning C4244: '=' : conversion from 'float' to 'int', possible loss of data
+     1>c:\users\kaveh\documents\visual studio 2010\projects\ekf - leo\ekf\main.cpp(130): warning C4244: '=' : conversion from 'float' to 'int', possible loss of data
+     1>c:\users\kaveh\documents\visual studio 2010\projects\ekf - leo\ekf\main.cpp(132): warning C4244: '=' : conversion from 'float' to 'int', possible loss of data
+     1>c:\users\kaveh\documents\visual studio 2010\projects\ekf - leo\ekf\main.cpp(102): warning C4101: 'RMS_out' : unreferenced local variable
+     1>c:\users\kaveh\documents\visual studio 2010\projects\ekf - leo\ekf\main.cpp(103): warning C4101: 'seg_quad' : unreferenced local variable
+     1>c:\users\kaveh\documents\visual studio 2010\projects\ekf - leo\ekf\main.cpp(106): warning C4101: 'z' : unreferenced local variable
+     1>c:\users\kaveh\documents\visual studio 2010\projects\ekf - leo\ekf\main.cpp(102): warning C4101: 'Sigma' : unreferenced local variable
+     1>c:\users\kaveh\documents\visual studio 2010\projects\ekf - leo\ekf\main.cpp(101): warning C4101: 'out' : unreferenced local variable
+     1>c:\users\kaveh\documents\visual studio 2010\projects\ekf - leo\ekf\main.cpp(183): warning C4101: 'Minimum' : unreferenced local variable
+       Link:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\kaveh\Documents\Visual Studio 2010\Projects\EKF - LEO\Debug\EKF.exe" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Debug\EKF.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\Users\kaveh\Documents\Visual Studio 2010\Projects\EKF - LEO\Debug\EKF.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\kaveh\Documents\Visual Studio 2010\Projects\EKF - LEO\Debug\EKF.lib" /MACHINE:X86 Debug\cadenceAccel.obj
+         Debug\cadenceGyro.obj
+         Debug\Detrending.obj
+         Debug\EKF.obj
+         Debug\fatigue.obj
+         Debug\fatigue2.obj
+         Debug\HammingSmooth.obj
+         Debug\main.obj
+         Debug\MatrixFuncs.obj
+         Debug\Moving_Average_High_Pass.obj
+         Debug\MVC.obj
+         Debug\PostProcessing.obj
+         Debug\PreProcessing.obj
+         Debug\read_file.obj
+         Debug\RMS_f32.obj
+         Debug\run_algorithms.obj
+         Debug\segmentanalysis.obj
+         Debug\Segmentation.obj
+         Debug\SpinScan.obj
+         Debug\SpinScanGyro.obj
+         LINK : C:\Users\kaveh\Documents\Visual Studio 2010\Projects\EKF - LEO\Debug\EKF.exe not found or not built by the last incremental link; performing full link
+         EKF.vcxproj -> C:\Users\kaveh\Documents\Visual Studio 2010\Projects\EKF - LEO\Debug\EKF.exe
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"C:\Users\kaveh\Documents\Visual Studio 2010\Projects\EKF - LEO\Debug\EKF.exe;#1" /manifest Debug\EKF.exe.intermediate.manifest
+       FinalizeBuildStatus:
+         Deleting file "Debug\EKF.unsuccessfulbuild".
+         Touching "Debug\EKF.lastbuildstate".
+     1>Done Building Project "C:\Users\kaveh\Documents\Visual Studio 2010\Projects\EKF - LEO\EKF\EKF.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:01.48
