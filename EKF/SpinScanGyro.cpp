@@ -4,10 +4,10 @@
 
 #define GYRO_SMOOTH 11
 #define GYRO_WINDOW 125
-#define GYRO_DELAY 54
+#define GYRO_DELAY 107
 extern uint32_t global_counter;
 
-extern std::ofstream f1, f2, f3, f4, f5, f6, f6_1, f6_2, X, Y, f8, ei;
+extern std::ofstream f1, f2, f3, f4, f5, f6, f6_s, f6_e, f6_2, X, Y, f8, ei;
 extern uint8_t  cadence_acc;
 extern int cadence_gyro;
 extern int GyroQuadS;
@@ -29,7 +29,7 @@ void SpinScanGyro(uint8_t* rawData, int init)
 	static int ptr1 = 0;																										// Pointer to the place inside the buffer to add the new data
 	static int GyroBuff[GYRO_WINDOW];
 	static int ptr2 = 0;
-	static short delayBuff[GYRO_DELAY];
+	static float delayBuff[GYRO_DELAY];
 	static int ptr3 = 0;
 	int ptr4;
 	/////////////////////////////
@@ -58,7 +58,7 @@ void SpinScanGyro(uint8_t* rawData, int init)
 	int SegmentGyro = 0;
 	static int state = 0;
 	float angle;
-	float max, min;
+	int max, min;
 	int i;
 	float g;
 	static int half_cycle = 0;
@@ -73,10 +73,17 @@ void SpinScanGyro(uint8_t* rawData, int init)
 	float f, anglestep;
 	static int anotherTemp1, anotherTemp2;
 	static int save = 0;
+	int pospeakdetected = 0;
+	int negpeakdetected = 0;
+	static float gyroAngle = 0;
+	static int tempqs = 0;
+	static int tempqe = 0;
+	int temp1, temp2, temp3;
+	static int alaki_counter = 0;
 	if (init == 0 && downsampler == 0)
 	{
 		raw_z.raw_data = 0;
-
+		alaki_counter++;
 		raw_z.data_byte[0] = rawData[4];	
 		raw_z.data_byte[1] = rawData[5];
 		if ((rawData[5] & 0x80) == 0x00)																							// Input data is positive, set the sign to 0
@@ -89,44 +96,85 @@ void SpinScanGyro(uint8_t* rawData, int init)
 			raw_z.data_byte[2] = 0xFF;
 			raw_z.data_byte[3] = 0xFF;
 		}
+		gyroAngle = (float)0.98*((float)raw_z.raw_data/32.8*(float)0.008 + gyroAngle);
+		X << gyroAngle << std::endl;
 		////////////////smoothing and segmentation/////////////////////
-		sum_z = sum_z - smoothBuff[ptr1] + raw_z.raw_data;																			// Oldest value is subtracted from the sum and new value is added
-		smoothBuff[ptr1] = raw_z.raw_data;																										// New value replaes the oldest value in the buffer																																
-		sz = (float)(sum_z)/GYRO_SMOOTH;																	// Outout is the average of the window
-		(ptr1)++;																															// Increment the pointers to implement the sliding effect and set them to zero if they reach the end of the buffer
-		if ( ptr1 == GYRO_SMOOTH )
-			ptr1 = 0;				
-		delayBuff[ptr3] = raw_z.raw_data;//sz;
-		ptr4 = ptr3 + 1;
-		if (ptr4 == GYRO_DELAY)
-			ptr4 = 0;
-		ptr3++;
-		if (ptr3 == GYRO_DELAY)
-			ptr3 = 0;
-		GyroBuff[ptr2] = delayBuff[ptr4];
-		ptr2++;
-		if (ptr2 == GYRO_WINDOW)
-			ptr2 = 0;
-		max = GyroBuff[0];
-		min = GyroBuff[0];
-		for (i = 0; i < GYRO_WINDOW; i++)
+		for (i = 0; i < 106; i++)
+			delayBuff[i] = delayBuff[i+1];
+		delayBuff[106] = gyroAngle;
+		
+		///Finding Positive Peak
+		pospeakdetected = 1;
+		for (i = 54; i < 107; i++)
 		{
-			if (max < GyroBuff[i])
-				max = GyroBuff[i];
-			if (min > GyroBuff[i])
-				min = GyroBuff[i];
+			if (delayBuff[53] < 0)
+			{
+				pospeakdetected = 0;
+				break;
+			}
+			if (delayBuff[i] > delayBuff[53])
+			{
+				pospeakdetected = 0;
+				break;
+			}
+			if (delayBuff[i+1] < 0)
+				break;
 		}
-		X <<  delayBuff[ptr4] << std::endl;
-		SegmentGyro = 0;
-		if (delayBuff[ptr4] > min + (max - min)/5)
-			SegmentGyro = 1;
-		Y <<  SegmentGyro << std::endl;
+		for (i = 52; i > 0; i--)
+		{
+			if (delayBuff[53] < 0)
+			{
+				pospeakdetected = 0;
+				break;
+			}
+			if (delayBuff[i] > delayBuff[53])
+			{
+				pospeakdetected = 0;
+				break;
+			}
+			if (delayBuff[i-1] < 0)
+				break;
+		}
+		///Finding Negative Peak
+		negpeakdetected = 1;
+		for (i = 54; i < 107; i++)
+		{
+			if (delayBuff[53] > 0)
+			{
+				negpeakdetected = 0;
+				break;
+			}
+			if (delayBuff[i] < delayBuff[53])
+			{
+				negpeakdetected = 0;
+				break;
+			}
+			if (delayBuff[i+1] < 0)
+				break;
+		}
+		for (i = 52; i > 0; i--)
+		{
+			if (delayBuff[53] > 0)
+			{
+				negpeakdetected = 0;
+				break;
+			}
+			if (delayBuff[i] < delayBuff[53])
+			{
+				negpeakdetected = 0;
+				break;
+			}
+			if (delayBuff[i-1] < 0)
+				break;
+		}
+		Y << negpeakdetected << std::endl;
 		////////////////////////////////////////////////////////////////
 		{
 			if (GyroQuadS == 1)
 			{
 				quadStartLength = length;
 				quad_start_delayed = 1;
+				tempqs = global_counter - 216;   // For demonstration
 			}
 			if (GyroQuadE == 1)
 			{
@@ -134,6 +182,7 @@ void SpinScanGyro(uint8_t* rawData, int init)
 				quad_detected_delayed = 1;
 				quad_end_delayed = 1;
 				fml = fuckyou;
+				tempqe = global_counter - 216;	// For demonstration
 			}
 			if (GyroHamS == 1)
 			{
@@ -150,7 +199,7 @@ void SpinScanGyro(uint8_t* rawData, int init)
 			switch(state)
 			{
 				case 0:
-					if (sz_prev < 0 && delayBuff[ptr4] > 0)
+					if (negpeakdetected == 1)
 					{
 						state = 1;
 						current_length = length;
@@ -159,11 +208,12 @@ void SpinScanGyro(uint8_t* rawData, int init)
 						half_cycle = 2;
 						//if (cadence_gyro == 0)
 						//	fml = 0;
-						save = 1;
+						if (alaki_counter > 107)
+							save = 1;
 					}
 					break;
 				case 1:
-					if (sz_prev > 0 && delayBuff[ptr4] < 0)
+					if (pospeakdetected == 1)
 					{
 						state = 0;
 						current_length = length;
@@ -181,6 +231,7 @@ void SpinScanGyro(uint8_t* rawData, int init)
 					angle += 180;
 				if (angle >= 360)
 					angle = 0;
+				//f6_s << tempqs << "\t\t" << angle << std::endl;	// For demonstration
 				if (RepCount_Q > 2)
 				{
 					averageQ_s[0] = averageQ_s[1];
@@ -189,14 +240,17 @@ void SpinScanGyro(uint8_t* rawData, int init)
 				}
 				if (RepCount_Q > 4)
 				{
-					if (abs(averageQ_s[2] - averageQ_s[1]) >= 180)
-							averageQ_s[2] -= 360;
-					angle = (averageQ_s[1] +  averageQ_s[2])/2;
+					temp1 = averageQ_s[0];
+					temp2 = averageQ_s[1];
+					temp3 = averageQ_s[2];
+					if (abs(temp1 - temp2) >= 180)
+							temp2 -= 360;
+					angle = (temp1 +  temp2)/2;
 					if (angle < 0)
 							angle += 360;
-					if (abs(angle - averageQ_s[0]) >= 180)
+					if (abs(angle - temp3) >= 180)
 						angle -= 360;
-					angle = (averageQ_s[0] +  angle)/2;
+					angle = (temp3 +  angle)/2;
 					if (angle < 0)
 						angle += 360;
 				}
@@ -207,6 +261,7 @@ void SpinScanGyro(uint8_t* rawData, int init)
 				}
 				k11 = k1;
 				quad_start_delayed = 0;
+				f6_s << tempqs << "\t\t" << angle << std::endl;
 			}
 			if (quad_end_delayed == 1 && half_cycle != 0)
 			{
@@ -215,6 +270,7 @@ void SpinScanGyro(uint8_t* rawData, int init)
 					angle += 180;
 				if (angle >= 360)
 					angle = 0;
+				//f6_e << tempqe << "\t\t" << angle << std::endl; // For demonstration
 				if (RepCount_Q > 2)
 				{
 					averageQ_e[0] = averageQ_e[1];
@@ -224,14 +280,17 @@ void SpinScanGyro(uint8_t* rawData, int init)
 				if (RepCount_Q > 4)
 				{
 				
-					if (abs(averageQ_e[0] - averageQ_e[1]) >= 180)
-							averageQ_e[1] -= 360;
-					angle = (averageQ_e[0] +  averageQ_e[1])/2;
+					temp1 = averageQ_e[0];
+					temp2 = averageQ_e[1];
+					temp3 = averageQ_e[2];
+					if (abs(temp1 - temp2) >= 180)
+							temp2 -= 360;
+					angle = (temp1 +  temp2)/2;
 					if (angle < 0)
 							angle += 360;
-					if (abs(angle - averageQ_e[2]) >= 180)
+					if (abs(angle - temp3) >= 180)
 						angle -= 360;
-					angle = (averageQ_e[2] +  angle)/2;
+					angle = (temp3 +  angle)/2;
 					if (angle < 0)
 						angle += 360;
 				}
@@ -244,7 +303,7 @@ void SpinScanGyro(uint8_t* rawData, int init)
 				k22 = k2;
 				quad_detected_delayed = 0;
 				quad_end_delayed = 0;
-
+				f6_e << tempqe << "\t\t" << angle << std::endl;
 				//EI//
 				endAngle = k2;
 				startAngle = k1;
@@ -349,9 +408,9 @@ void SpinScanGyro(uint8_t* rawData, int init)
 				k1 = 0;
 				k2 = 0;
 			}
-			g = (float)(delayBuff[ptr4]-sz_prev)*(delayBuff[ptr4]-sz_prev) + (float)(6.4e-5);
+			//g = (float)(delayBuff[ptr4]-sz_prev)*(delayBuff[ptr4]-sz_prev) + (float)(6.4e-5);
 			length++;// += sqrt(g);
-			sz_prev = delayBuff[ptr4];
+			//sz_prev = delayBuff[ptr4];
 			if (save == 1)
 			{
 				save = 0;
@@ -375,6 +434,7 @@ void SpinScanGyro(uint8_t* rawData, int init)
 		{
 			quadStartLength = length;
 			quad_start_delayed = 1;
+			tempqs = global_counter - 216;	// For demonstration
 		}
 		if (GyroQuadE == 1)
 		{
@@ -382,6 +442,7 @@ void SpinScanGyro(uint8_t* rawData, int init)
 			quad_detected_delayed = 1;
 			quad_end_delayed = 1;
 			fml = fuckyou;
+			tempqe = global_counter - 216;	// For demonstration
 		}
 		if (GyroHamS == 1)
 		{
